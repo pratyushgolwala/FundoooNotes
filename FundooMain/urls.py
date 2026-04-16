@@ -17,6 +17,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from main.views import *
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+from django.conf import settings
+from main.api_views import SignupAPI, LoginAPI, HomeAPI
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,3 +28,15 @@ urlpatterns = [
     path('signup/', signup_view, name='signup'),
     path('home/<int:user_id>/', home, name='home'),
 ]
+urlpatterns += [
+    path("api/signup/", SignupAPI.as_view(), name="api-signup"),
+    path("api/login/", LoginAPI.as_view(), name="api-login"),
+    path("api/home/", HomeAPI.as_view(), name="api-home"),
+]
+
+if settings.DEBUG:
+    urlpatterns += [
+        path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+        path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+        path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+    ]
