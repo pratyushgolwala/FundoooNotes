@@ -1,0 +1,19 @@
+# Local DB (never commit)
+db.sqlite3
+*.sqlite3
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+myenv/
+.venv/
+venv/
+
+# Environment files
+.env
+
+# OS / editor
+.DS_Store
+.vscode/
