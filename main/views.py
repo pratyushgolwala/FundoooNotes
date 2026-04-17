@@ -1,44 +1,47 @@
 from django.shortcuts import render, redirect
-from .models import User
-from django.contrib.auth import authenticate, login, logout
+
 from django.contrib.auth.hashers import check_password, make_password
+
+from .forms import LoginForm, SignupForm
+from .models import User
 
 
 # Create your views here.
 
 def login_view(request):
-    if request.method == 'POST':
-        name = request.POST.get('username')
-        password = request.POST.get('password')
-        
-        user = None
-        try:
-            user = User.objects.get(name=name)
-        except User.DoesNotExist:
-            try:
-                user = User.objects.get(email=name)
-            except User.DoesNotExist:
-                user = None
-                
+    form = LoginForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        identifier = form.cleaned_data['username']
+        password = form.cleaned_data['password']
+
+        user = User.objects.filter(name=identifier).first() or User.objects.filter(email=identifier).first()
         if user and check_password(password, user.password):
-            request.session['user_id'] = user.pk  # Store user ID in session
-            return redirect('home', user_id=user.pk)  # Redirect to a home page after successful login
-        else:
-            return render(request, 'login.html', {'error': 'Invalid credentials'})
-    return render(request, 'login.html')
+            request.session['user_id'] = user.pk
+            return redirect('home', user_id=user.pk)
+
+        form.add_error(None, 'Invalid credentials')
+
+    return render(request, 'login.html', {"form": form})
 
 
 def signup_view(request):
-    if request.method == 'POST':
-        name = request.POST.get('username')
-        email = request.POST.get('email')
-        phone_number = request.POST.get('phone_number')
-        password = request.POST.get('password')
-        
-        user = User.objects.create(name=name, email=email, phone_number=phone_number, password=make_password(password))
+    form = SignupForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        name = form.cleaned_data['username']
+        email = form.cleaned_data['email']
+        phone_number = form.cleaned_data['phone_number']
+        password = form.cleaned_data['password']
+
+        user = User.objects.create(
+            name=name,
+            email=email,
+            phone_number=phone_number,
+            password=make_password(password),
+        )
         user.save()
-        return redirect('login')  # Redirect to login page after successful signup  
-    return render(request, 'signup.html')
+        return redirect('login')
+
+    return render(request, 'signup.html', {"form": form})
 
 def home(request, user_id):
     try:

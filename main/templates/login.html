@@ -142,10 +142,21 @@
         <p class="lead">Enter your credentials to access your account.</p>
       </div>
 
+      {% if form and form.errors %}
+        <div style="margin-bottom: 12px; color: #b91c1c; font-size: 13px;">
+          {{ form.non_field_errors }}
+          {% for field in form %}
+            {% for error in field.errors %}
+              <div>{{ error }}</div>
+            {% endfor %}
+          {% endfor %}
+        </div>
+      {% endif %}
+
       <form method="post" action="{% url 'login' %}">
         {% csrf_token %}
         <label for="username">Username or Email</label>
-        <input id="username" name="username" type="text" autocomplete="username" required />
+        <input id="username" name="username" type="text" autocomplete="username" required value="{% if form %}{{ form.username.value|default:'' }}{% endif %}" />
 
         <label for="password" style="margin-top:12px;">Password</label>
         <input id="password" name="password" type="password" autocomplete="current-password" required />

@@ -158,15 +158,27 @@
           <p class="lead">Create your account to get started.</p>
         </div>
 
+        {% if form and form.errors %}
+          <div style="margin-bottom: 12px; color: #b91c1c; font-size: 13px;">
+            {{ form.non_field_errors }}
+            {% for field in form %}
+              {% for error in field.errors %}
+                <div>{{ error }}</div>
+              {% endfor %}
+            {% endfor %}
+          </div>
+        {% endif %}
+
         <form method="post" action="{% url 'signup' %}">
             {% csrf_token %}
-            <label for="username">Username </label>
+            <label for="username">Full Name</label>
           <input
             id="username"
             name="username"
             type="text"
             autocomplete="username"
             required
+            value="{% if form %}{{ form.username.value|default:'' }}{% endif %}"
           />
           <label for="email">Email</label>
           <input
@@ -175,6 +187,7 @@
             type="email"
             autocomplete="email"
             required
+            value="{% if form %}{{ form.email.value|default:'' }}{% endif %}"
           />
           <label for="phone_number">Phone Number</label>
           <input
@@ -183,6 +196,7 @@
             type="text"
             autocomplete="tel"
             required
+            value="{% if form %}{{ form.phone_number.value|default:'' }}{% endif %}"
           />
           <label for="password" style="margin-top: 12px">Password</label>
           <input
@@ -190,6 +204,15 @@
             name="password"
             type="password"
             autocomplete="current-password"
+            required
+          />
+
+          <label for="confirm_password" style="margin-top: 12px">Confirm Password</label>
+          <input
+            id="confirm_password"
+            name="confirm_password"
+            type="password"
+            autocomplete="new-password"
             required
           />
 
