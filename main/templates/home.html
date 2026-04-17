@@ -1,11 +1,77 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --accent: #3b82f6;
+      --text: #0f172a;
+      --muted: #6b7280;
+      --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, var(--bg), #eef2ff);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    .card {
+      max-width: 520px;
+      width: 100%;
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 28px;
+      text-align: center;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 24px;
+    }
+    p {
+      color: var(--muted);
+      margin: 0 0 20px;
+      font-size: 14px;
+    }
+    .btn {
+      display: inline-block;
+      padding: 10px 16px;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .links {
+      margin-top: 14px;
+      font-size: 13px;
+    }
+    .links a {
+      color: var(--accent);
+      text-decoration: none;
+      margin: 0 6px;
+    }
+  </style>
 </head>
 <body>
-    <h1>Welcome to the Home Page</h1>
+  <main class="card">
+    <h1>Welcome back!</h1>
+    <p>You are logged in successfully.</p>
+
+    <a class="btn" href="{% url 'notes-list' user_id=user.id %}">Go to Notes</a>
+
+    <div class="links">
+      <a href="{% url 'logout' %}">Logout</a>
+      <a href="/profile">Profile</a>
+    </div>
+  </main>
 </body>
 </html>

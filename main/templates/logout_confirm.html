@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Logout</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; }
+    button { padding: 8px 12px; margin-right: 8px; }
+  </style>
+</head>
+<body>
+  <h2>Are you sure you want to log out?</h2>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit">Yes, log out</button>
+    <a href="/">Cancel</a>
+  </form>
+</body>
+</html>

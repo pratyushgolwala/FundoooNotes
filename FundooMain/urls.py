@@ -26,7 +26,12 @@ urlpatterns = [
     path('', login_view, name='login'),
     path('login/', login_view, name='login'),
     path('signup/', signup_view, name='signup'),
+    path('logout/', logout_view, name='logout'),
     path('home/<int:user_id>/', home, name='home'),
+    path("users/<int:user_id>/notes/", notes_list, name="notes-list"),
+    path("users/<int:user_id>/notes/new/", note_create, name="note-create"),
+    path("users/<int:user_id>/notes/<int:note_id>/edit/", note_update, name="note-update"),
+    path("users/<int:user_id>/notes/<int:note_id>/delete/", note_delete, name="note-delete"),
 ]
 urlpatterns += [
     path("api/signup/", SignupAPI.as_view(), name="api-signup"),

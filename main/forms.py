@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import User
+from .models import User, Note
 
 class LoginForm(forms.Form):
     username = forms.CharField(label='Username or Email', max_length=100)
@@ -25,3 +25,10 @@ class SignupForm(forms.Form):
         if email and User.objects.filter(email=email).exists():
             self.add_error('email', "Email already exists")
         return cleaned_data
+    
+    
+
+class NoteForm(forms.ModelForm):
+    class Meta:
+        model = Note
+        fields = ["title", "content"]
