@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        a { color: #4f46e5; text-decoration: none; margin-right: 10px; }
+        a:hover { text-decoration: underline; }
+        .btn { padding: 8px 16px; background: #4f46e5; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .note { border: 1px solid #ddd; padding: 12px; margin: 10px 0; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>My Notes</h1>
+        <p>User: {{ user.name }}</p>
+        <a href="{% url 'home' user.id %}">← Back to Home</a>
+        <a href="{% url 'note-create' user.id %}" class="btn">+ New Note</a>
+        
+        {% if notes %}
+            <div class="notes-list">
+                {% for note in notes %}
+                    <div class="note">
+                        <h3>{{ note.title }}</h3>
+                        <p>{{ note.content|truncatewords:20 }}</p>
+                        {% if note.label %}
+                            <small>Label: <strong>{{ note.label.name }}</strong></small>
+                        {% endif %}
+                        <p>
+                            <a href="{% url 'note-update' user.id note.id %}">Edit</a> |
+                            <a href="{% url 'note-delete' user.id note.id %}">Delete</a>
+                        </p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No notes yet. <a href="{% url 'note-create' user.id %}">Create one!</a></p>
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logout</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 500px; margin: 0 auto; text-align: center; }
+        form { margin-top: 20px; }
+        button { padding: 10px 20px; margin-right: 10px; cursor: pointer; }
+        .btn-logout { background: #dc2626; color: white; border: none; border-radius: 4px; }
+        .btn-cancel { background: #999; color: white; border: none; border-radius: 4px; }
+        a { color: #4f46e5; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Logout?</h1>
+        <p>Are you sure you want to logout?</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn-logout">Logout</button>
+            <a href="{% url 'home' user.id %}" class="btn-cancel">Cancel</a>
+        </form>
+    </div>
+</body>
+</html>

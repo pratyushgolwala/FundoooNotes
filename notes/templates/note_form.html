@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if note %}Edit Note{% else %}New Note{% endif %}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        form { display: flex; flex-direction: column; }
+        input, textarea, select { padding: 8px; margin: 5px 0; font-size: 14px; }
+        button { padding: 10px; background: #4f46e5; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        a { color: #4f46e5; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{% if note %}Edit Note{% else %}Create Note{% endif %}</h1>
+        <a href="{% url 'notes-list' user.id %}">← Back</a>
+        
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">{% if note %}Update{% else %}Create{% endif %}</button>
+        </form>
+    </div>
+</body>
+</html>
