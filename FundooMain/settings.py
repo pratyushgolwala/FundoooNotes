@@ -42,7 +42,24 @@ INSTALLED_APPS = [
 ]
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+    ],
 }
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "FundooNotes API",
+    "VERSION": "1.0.0",
+    "SECURITY_SCHEMES": {
+        "bearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+        }
+    },
+    "SECURITY": [{"bearerAuth": []}],
+}
+
 EXTERNAL_APPS = [
     'main'
 ]
@@ -130,3 +147,14 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+swaggwer_settings = {
+    'title': 'FundooNotes API',
+    'version': '1.0.0',
+    'securityDefinitions': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'  }
+        }
+}

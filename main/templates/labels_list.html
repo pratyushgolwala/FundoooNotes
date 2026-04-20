@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Labels</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; }
+    .label { border: 1px solid #e5e7eb; padding: 10px; margin-bottom: 8px; border-radius: 8px; }
+    .actions a, .actions form { display: inline-block; margin-right: 8px; }
+    .btn { padding: 6px 10px; border-radius: 6px; background:#3b82f6; color:#fff; text-decoration:none; }
+    .btn-danger { background:#ef4444; }
+  </style>
+</head>
+<body>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+    <h1>{{ user.name }}'s Labels</h1>
+    <a class="btn" href="{% url 'logout' %}">Logout</a>
+  </div>
+  <p>
+    <a class="btn" href="{% url 'label-create' user_id=user.id %}">+ Create Label</a>
+    <a class="btn" href="{% url 'notes-list' user_id=user.id %}">Back to Notes</a>
+  </p>
+
+  {% if labels %}
+    {% for label in labels %}
+      <div class="label">
+        <strong>{{ label.name }}</strong>
+        <div class="actions">
+          <a class="btn" href="{% url 'label-update' user_id=user.id label_id=label.id %}">Edit</a>
+          <form method="post" action="{% url 'label-delete' user_id=user.id label_id=label.id %}">
+            {% csrf_token %}
+            <button class="btn btn-danger" type="submit">Delete</button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No labels yet.</p>
+  {% endif %}
+</body>
+</html>

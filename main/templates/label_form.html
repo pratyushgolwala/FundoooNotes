@@ -3,35 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Note</title>
+  <title>Label</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 24px; }
     label { display: block; margin-top: 12px; }
-    input, textarea { width: 100%; padding: 8px; margin-top: 6px; }
+    input { width: 100%; padding: 8px; margin-top: 6px; }
     button { margin-top: 12px; padding: 8px 12px; }
   </style>
 </head>
 <body>
   <div style="display: flex; justify-content: space-between; align-items: center;">
-    <h1>{% if note %}Edit{% else %}Create{% endif %} Note</h1>
+    <h1>{% if label %}Edit{% else %}Create{% endif %} Label</h1>
     <a href="{% url 'logout' %}">Logout</a>
   </div>
 
   <form method="post">
     {% csrf_token %}
     {{ form.non_field_errors }}
-    <label>Title</label>
-    {{ form.title }}
-
-    <label>Label</label>
-    {{ form.label }}
-
-    <label>Content</label>
-    {{ form.content }}
-
+    <label>Name</label>
+    {{ form.name }}
     <button type="submit">Save</button>
   </form>
 
-  <p><a href="{% url 'notes-list' user_id=user.id %}">Back to notes</a></p>
+  <p><a href="{% url 'labels-list' user_id=user.id %}">Back to labels</a></p>
 </body>
 </html>

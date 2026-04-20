@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import User, Note
+from .models import User, Note, Label
 
 class LoginForm(forms.Form):
     username = forms.CharField(label='Username or Email', max_length=100)
@@ -31,4 +31,10 @@ class SignupForm(forms.Form):
 class NoteForm(forms.ModelForm):
     class Meta:
         model = Note
-        fields = ["title", "content"]
+        fields = ["title", "content", "label"]
+
+
+class LabelForm(forms.ModelForm):
+    class Meta:
+        model = Label
+        fields = ["name"]

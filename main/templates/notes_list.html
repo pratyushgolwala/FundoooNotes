@@ -17,12 +17,27 @@
     <h1>{{ user.name }}'s Notes</h1>
     <a class="btn" href="{% url 'logout' %}">Logout</a>
   </div>
-  <p><a class="btn" href="{% url 'note-create' user_id=user.id %}">+ Create Note</a></p>
+  <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 16px;">
+    <a class="btn" href="{% url 'note-create' user_id=user.id %}">+ Create Note</a>
+    <a class="btn" href="{% url 'labels-list' user_id=user.id %}">Manage Labels</a>
+    <form method="get" style="display: inline-flex; gap: 6px; align-items: center;">
+      <label for="label" style="margin: 0;">Filter:</label>
+      <select id="label" name="label" onchange="this.form.submit()">
+        <option value="">All</option>
+        {% for label in labels %}
+          <option value="{{ label.id }}" {% if selected_label_id == label.id|stringformat:'s' %}selected{% endif %}>
+            {{ label.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </form>
+  </div>
 
   {% if notes %}
     {% for note in notes %}
       <div class="note">
         <h3>{{ note.title }}</h3>
+        <p><strong>Label:</strong> {{ note.label.name|default:"None" }}</p>
         <p>{{ note.content }}</p>
         <div class="actions">
           <a class="btn" href="{% url 'note-update' user_id=user.id note_id=note.id %}">Edit</a>

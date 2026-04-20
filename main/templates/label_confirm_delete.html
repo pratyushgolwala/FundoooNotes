@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delete Label</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; }
+    button { padding: 8px 12px; margin-right: 8px; }
+  </style>
+</head>
+<body>
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <h2>Delete "{{ label.name }}"?</h2>
+    <a href="{% url 'logout' %}">Logout</a>
+  </div>
+  <p>This action cannot be undone.</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit">Yes, delete</button>
+    <a href="{% url 'labels-list' user_id=user.id %}">Cancel</a>
+  </form>
+</body>
+</html>

@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect
 
 from django.contrib.auth.hashers import check_password, make_password
 
-from .forms import *
-from .models import User
+from .forms import LoginForm, SignupForm, NoteForm, LabelForm
+from .models import User, Note, Label
 
 
 
@@ -58,18 +58,22 @@ def home(request, user_id):
 
 def notes_list(request, user_id):
     user = User.objects.get(pk=user_id)
+    labels = Label.objects.filter(user=user).order_by("name")
+    selected_label_id = request.GET.get("label")
     notes = Note.objects.filter(user=user).order_by("-created_at")
-    return render(request, "notes_list.html", {"user": user, "notes": notes})
+    if selected_label_id:
+        notes = notes.filter(label_id=selected_label_id)
+    return render(
+        request,
+        "notes_list.html",
+        {
+            "user": user,
+            "notes": notes,
+            "labels": labels,
+            "selected_label_id": selected_label_id,
+        },
+    )
 
-def note_create(request, user_id):
-    user = User.objects.get(pk=user_id)
-    form = NoteForm(request.POST or None)
-    if request.method == "POST" and form.is_valid():
-        note = form.save(commit=False)
-        note.user = user
-        note.save()
-        return redirect("notes-list", user_id=user.id)
-    return render(request, "note_form.html", {"form": form, "user": user})
 
 def note_update(request, user_id, note_id):
     user = User.objects.get(pk=user_id)
@@ -87,6 +91,51 @@ def note_delete(request, user_id, note_id):
         note.delete()
         return redirect("notes-list", user_id=user.id)
     return render(request, "note_confirm_delete.html", {"note": note, "user": user})
+
+
+def labels_list(request, user_id):
+    user = User.objects.get(pk=user_id)
+    labels = Label.objects.filter(user=user).order_by("name")
+    return render(request, "labels_list.html", {"user": user, "labels": labels})
+
+def note_create(request, user_id):
+    user = User.objects.get(pk=user_id)
+    form = NoteForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        note = form.save(commit=False)
+        note.user = user
+        note.save()
+        return redirect("notes-list", user_id=user.id)
+    return render(request, "note_form.html", {"form": form, "user": user})
+
+def label_create(request, user_id):
+    user = User.objects.get(pk=user_id)
+    form = LabelForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        label = form.save(commit=False)
+        label.user = user
+        label.save()
+        return redirect("labels-list", user_id=user.id)
+    return render(request, "label_form.html", {"form": form, "user": user})
+
+
+def label_update(request, user_id, label_id):
+    user = User.objects.get(pk=user_id)
+    label = Label.objects.get(pk=label_id, user=user)
+    form = LabelForm(request.POST or None, instance=label)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        return redirect("labels-list", user_id=user.id)
+    return render(request, "label_form.html", {"form": form, "user": user, "label": label})
+
+
+def label_delete(request, user_id, label_id):
+    user = User.objects.get(pk=user_id)
+    label = Label.objects.get(pk=label_id, user=user)
+    if request.method == "POST":
+        label.delete()
+        return redirect("labels-list", user_id=user.id)
+    return render(request, "label_confirm_delete.html", {"label": label, "user": user})
 
 
 def logout_view(request):

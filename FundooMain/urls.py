@@ -19,7 +19,7 @@ from django.urls import path
 from main.views import *
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from django.conf import settings
-from main.api_views import SignupAPI, LoginAPI, HomeAPI
+from main.api_views import SignupAPI, LoginAPI, HomeAPI, TokenAPI, NotesAPI, NoteDetailAPI
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -32,11 +32,18 @@ urlpatterns = [
     path("users/<int:user_id>/notes/new/", note_create, name="note-create"),
     path("users/<int:user_id>/notes/<int:note_id>/edit/", note_update, name="note-update"),
     path("users/<int:user_id>/notes/<int:note_id>/delete/", note_delete, name="note-delete"),
+    path("users/<int:user_id>/labels/", labels_list, name="labels-list"),
+    path("users/<int:user_id>/labels/new/", label_create, name="label-create"),
+    path("users/<int:user_id>/labels/<int:label_id>/edit/", label_update, name="label-update"),
+    path("users/<int:user_id>/labels/<int:label_id>/delete/", label_delete, name="label-delete"),
 ]
 urlpatterns += [
     path("api/signup/", SignupAPI.as_view(), name="api-signup"),
     path("api/login/", LoginAPI.as_view(), name="api-login"),
     path("api/home/", HomeAPI.as_view(), name="api-home"),
+    path("api/token/", TokenAPI.as_view(), name="api-token"),
+    path("api/notes/", NotesAPI.as_view(), name="api-notes"),
+    path("api/notes/<int:note_id>/", NoteDetailAPI.as_view(), name="api-note-detail"),
 ]
 
 if settings.DEBUG:
