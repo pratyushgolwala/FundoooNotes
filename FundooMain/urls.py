@@ -23,7 +23,7 @@ from users.api_views import SignupAPI, LoginAPI, HomeAPI
 
 # Note views  
 from notes.views import notes_list, note_create, note_update, note_delete
-from notes.api_views import TokenAPI, NotesAPI, NoteDetailAPI
+from notes.api_views import NotesAPI, NoteDetailAPI
 
 # Label views
 from labels.views import labels_list, label_create, label_update, label_delete
@@ -80,7 +80,6 @@ urlpatterns += [
     path("api/signup/", SignupAPI.as_view(), name="api-signup"),
     path("api/login/", LoginAPI.as_view(), name="api-login"),
     path("api/home/", HomeAPI.as_view(), name="api-home"),
-    path("api/token/", TokenAPI.as_view(), name="api-token"),
     path("api/notes/", NotesAPI.as_view(), name="api-notes"),
     path("api/notes/<int:note_id>/", NoteDetailAPI.as_view(), name="api-note-detail"),
 ]

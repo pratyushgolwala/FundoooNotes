@@ -18,3 +18,15 @@ class UserSerializer(serializers.Serializer):
     name = serializers.CharField()
     email = serializers.EmailField()
     phone_number = serializers.CharField()
+
+
+class TokenResponseSerializer(serializers.Serializer):
+    access_token = serializers.CharField()
+    refresh_token = serializers.CharField()
+    token_type = serializers.CharField()
+    expires_in = serializers.IntegerField()
+    user_id = serializers.IntegerField()
+
+
+class RefreshTokenSerializer(serializers.Serializer):
+    refresh_token = serializers.CharField()

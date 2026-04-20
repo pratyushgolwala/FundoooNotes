@@ -45,17 +45,43 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [],
 }
 
+
+def spectacular_postprocessing_hook(result, generator, request, public):
+    """Postprocess the schema to ensure securitySchemes are included."""
+    if "components" in result and "securitySchemes" not in result["components"]:
+        result["components"]["securitySchemes"] = {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+                "description": "Enter your JWT token"
+            }
+        }
+    return result
+
+
 SPECTACULAR_SETTINGS = {
     "TITLE": "FundooNotes API",
     "VERSION": "1.0.0",
+    "DESCRIPTION": "API for FundooNotes - Note taking and organization application",
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
+    "SERVE_AUTHENTICATION": None,
+    "POSTPROCESSING_HOOKS": [
+        "FundooMain.settings.spectacular_postprocessing_hook",
+    ],
     "SECURITY_SCHEMES": {
         "bearerAuth": {
             "type": "http",
             "scheme": "bearer",
             "bearerFormat": "JWT",
+            "description": "Enter your JWT token"
         }
     },
-    "SECURITY": [{"bearerAuth": []}],
+    "SECURITY": [
+        {
+            "bearerAuth": []
+        }
+    ],
 }
 EXTERNAL_APPS = [
     'users',

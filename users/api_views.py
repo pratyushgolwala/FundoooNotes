@@ -8,9 +8,11 @@ from rest_framework import status
 from drf_spectacular.utils import extend_schema
 
 from .models import User
-from .serializers import SignupSerializer, LoginSerializer, UserSerializer
+from .serializers import SignupSerializer, LoginSerializer, UserSerializer, TokenResponseSerializer, RefreshTokenSerializer
+from .token_utils import generate_tokens, decode_token
 
 from typing import Any, Dict, cast
+import jwt
 
 
 class SignupAPI(APIView):
@@ -37,7 +39,7 @@ class SignupAPI(APIView):
 
 
 class LoginAPI(APIView):
-    @extend_schema(request=LoginSerializer, responses={200: dict})
+    @extend_schema(request=LoginSerializer, responses={200: TokenResponseSerializer})
     def post(self, request):
         ser = LoginSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
@@ -51,7 +53,12 @@ class LoginAPI(APIView):
             return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
         request.session["user_id"] = user.pk
-        return Response({"detail": "Logged in", "user_id": user.pk}, status=status.HTTP_200_OK)
+        
+        # Generate both bearer and refresh tokens
+        tokens = generate_tokens(user.pk)
+        tokens["user_id"] = user.pk
+        
+        return Response(tokens, status=status.HTTP_200_OK)
 
 
 class HomeAPI(APIView):
@@ -66,3 +73,35 @@ class HomeAPI(APIView):
             return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
         return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+
+
+class RefreshTokenAPI(APIView):
+    @extend_schema(request=RefreshTokenSerializer, responses={200: TokenResponseSerializer})
+    def post(self, request):
+        ser = RefreshTokenSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        data = cast(Dict[str, Any], ser.validated_data)  # type: ignore
+        
+        refresh_token = data["refresh_token"]
+        
+        try:
+            payload = decode_token(refresh_token)
+        except jwt.ExpiredSignatureError:
+            return Response({"detail": "Refresh token expired"}, status=status.HTTP_401_UNAUTHORIZED)
+        except jwt.InvalidTokenError:
+            return Response({"detail": "Invalid refresh token"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        # Verify token is a refresh token
+        if payload.get("token_type") != "refresh":
+            return Response({"detail": "Invalid refresh token"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        user_id = payload.get("user_id")
+        user = User.objects.filter(pk=user_id).first()
+        if not user:
+            return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Generate new tokens
+        tokens = generate_tokens(user.pk)
+        tokens["user_id"] = user.pk
+        
+        return Response(tokens, status=status.HTTP_200_OK)

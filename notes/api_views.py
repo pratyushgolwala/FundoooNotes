@@ -12,7 +12,8 @@ from rest_framework import status
 from drf_spectacular.utils import extend_schema
 
 from users.models import User
-from users.serializers import LoginSerializer
+from users.serializers import LoginSerializer, TokenResponseSerializer
+from users.token_utils import generate_tokens, decode_token
 from .models import Note
 from .serializers import NoteSerializer
 
@@ -39,6 +40,10 @@ def _get_user_from_request(request):
     except jwt.InvalidTokenError:
         return None, Response({"detail": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
 
+    # Verify token is an access token (bearer token), not refresh token
+    if payload.get("token_type") != "access":
+        return None, Response({"detail": "Invalid token type"}, status=status.HTTP_401_UNAUTHORIZED)
+
     user_id = payload.get("user_id")
     user = User.objects.filter(pk=user_id).first()
     if not user:
@@ -47,7 +52,7 @@ def _get_user_from_request(request):
 
 
 class TokenAPI(APIView):
-    @extend_schema(request=LoginSerializer, responses={200: dict})
+    @extend_schema(request=LoginSerializer, responses={200: TokenResponseSerializer})
     def post(self, request):
         ser = LoginSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
@@ -60,13 +65,11 @@ class TokenAPI(APIView):
         if not user or not check_password(password, user.password):
             return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
-        payload = {
-            "user_id": user.pk,
-            "exp": datetime.now(timezone.utc) + timedelta(hours=1),
-            "iat": datetime.now(timezone.utc),
-        }
-        token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
-        return Response({"token": token, "user_id": user.pk}, status=status.HTTP_200_OK)
+        # Generate both bearer and refresh tokens
+        tokens = generate_tokens(user.pk)
+        tokens["user_id"] = user.pk
+
+        return Response(tokens, status=status.HTTP_200_OK)
 
 
 class NotesAPI(APIView):
@@ -120,6 +123,7 @@ class NoteDetailAPI(APIView):
         note = ser.save(user=user)
         return Response(NoteSerializer(note).data, status=status.HTTP_200_OK)
 
+    @extend_schema(responses={204: None})
     def delete(self, request, note_id):
         user, error = _get_user_from_request(request)
         if error:
