@@ -42,9 +42,25 @@ INSTALLED_APPS = [
 ]
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_AUTHENTICATION_CLASSES": [],
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "FundooNotes API",
+    "VERSION": "1.0.0",
+    "SECURITY_SCHEMES": {
+        "bearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+        }
+    },
+    "SECURITY": [{"bearerAuth": []}],
 }
 EXTERNAL_APPS = [
-    'main'
+    'users',
+    'labels',
+    'notes',
 ]
 
 INSTALLED_APPS += EXTERNAL_APPS
