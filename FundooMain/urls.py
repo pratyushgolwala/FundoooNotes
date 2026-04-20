@@ -39,12 +39,20 @@ from django.conf import settings
 
 def logout_view(request):
     """Simple logout view"""
+    user_id = request.session.get('user_id')
     if request.method == "POST":
         request.session.flush()
         from django.shortcuts import redirect
         return redirect('login')
     from django.shortcuts import render
-    return render(request, "logout_confirm.html")
+    user = None
+    if user_id:
+        try:
+            from users.models import User
+            user = User.objects.get(id=user_id)
+        except:
+            pass
+    return render(request, "logout_confirm.html", {'user': user})
 
 
 urlpatterns = [

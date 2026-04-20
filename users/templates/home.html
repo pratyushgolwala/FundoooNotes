@@ -3,9 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
+    <title>Home - FundooNotes</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .user-info {
+            background: #f5f7fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #667eea;
+        }
+        .user-info p {
+            margin: 8px 0;
+            color: #555;
+        }
+        .user-info strong {
+            color: #333;
+        }
+        .nav-links {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .nav-btn {
+            display: inline-block;
+            padding: 12px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            text-align: center;
+            transition: background 0.3s;
+            font-weight: 500;
+        }
+        .nav-btn:hover {
+            background: #764ba2;
+        }
+        .nav-btn.secondary {
+            background: #f5f7fa;
+            color: #333;
+            border: 1px solid #667eea;
+        }
+        .nav-btn.secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+        .logout-btn {
+            width: 100%;
+            padding: 12px;
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+        .logout-btn:hover {
+            background: #b91c1c;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to the Home Page</h1>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome to FundooNotes</h1>
+            <p style="color: #666; margin-top: 5px;">Organize your thoughts</p>
+        </div>
+
+        <div class="user-info">
+            <p><strong>Name:</strong> {{ user.name }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Phone:</strong> {{ user.phone_number }}</p>
+        </div>
+
+        <div class="nav-links">
+            <a href="{% url 'notes-list' user.id %}" class="nav-btn">
+                📝 My Notes
+            </a>
+            <a href="{% url 'labels-list' user.id %}" class="nav-btn secondary">
+                🏷️ Labels
+            </a>
+        </div>
+
+        <form method="post" action="{% url 'logout' %}" style="margin-top: 30px;">
+            {% csrf_token %}
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+    </div>
 </body>
 </html>
