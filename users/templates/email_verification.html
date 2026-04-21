@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Email Verification</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>FundooNotes</h1>
+        <div class="{% if error %}error{% else %}success{% endif %}">
+            <h2>{{ message }}</h2>
+        </div>
+        {% if not error %}
+            <p><a href="{% url 'login' %}">Go to Login</a></p>
+        {% else %}
+            <p><a href="{% url 'signup' %}">Try Signing Up Again</a></p>
+        {% endif %}
+    </div>
+</body>
+</html>

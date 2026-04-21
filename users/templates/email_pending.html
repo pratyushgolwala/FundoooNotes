@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Verify Your Email</title>
+    <style>
+        :root {
+            --bg: #f5f7fb;
+            --card: #ffffff;
+            --accent: #4f46e5;
+            --muted: #6b7280;
+            --warning: #f59e0b;
+            --shadow: 0 6px 24px rgba(31, 41, 55, 0.08);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto;
+        }
+        
+        html, body {
+            height: 100%;
+            margin: 0;
+            background: linear-gradient(180deg, var(--bg), #eef2ff);
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        .wrap {
+            min-height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+        }
+        
+        .card {
+            width: 100%;
+            max-width: 450px;
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 40px;
+            box-sizing: border-box;
+            border: 1px solid #e6e9f2;
+        }
+        
+        .icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            background: #fef3c7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+        
+        .card h1 {
+            text-align: center;
+            margin: 0 0 12px;
+            font-size: 24px;
+            color: #0f172a;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: var(--muted);
+            font-size: 15px;
+            margin-bottom: 24px;
+        }
+        
+        .info-box {
+            background: #fef3c7;
+            border-left: 4px solid var(--warning);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+        
+        .info-box p {
+            margin: 0;
+            color: #78350f;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .steps {
+            background: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+        
+        .step {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #374151;
+        }
+        
+        .step-num {
+            min-width: 24px;
+            width: 24px;
+            height: 24px;
+            background: var(--accent);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .email-display {
+            background: white;
+            border: 1px solid #e6e9f2;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            color: var(--accent);
+            margin: 16px 0;
+        }
+        
+        .btn {
+            display: inline-block;
+            width: 100%;
+            padding: 12px;
+            margin-top: 16px;
+            border-radius: 8px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 15px;
+        }
+        
+        .btn:hover { opacity: 0.95; }
+        
+        .meta {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+        
+        .meta a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <main class="card">
+            <div class="icon">✉️</div>
+            <h1>Verify Your Email</h1>
+            <p class="subtitle">We've sent a verification link to your email</p>
+            
+            <div class="info-box">
+                <p><strong>Check your inbox!</strong> Look for an email from FundooNotes with a verification link.</p>
+            </div>
+            
+            <div class="email-display">
+                {{ email }}
+            </div>
+            
+            <div class="steps">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div>Open the email from FundooNotes</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div>Click the verification link</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <div>You'll be redirected to login</div>
+                </div>
+            </div>
+            
+            <p style="font-size: 13px; color: var(--muted); text-align: center; margin: 16px 0;">
+                🕐 The link expires in 24 hours
+            </p>
+            
+            <button class="btn" onclick="window.history.back()">← Go Back</button>
+            
+            <p class="meta">Already verified? <a href="{% url 'login' %}">Go to Login</a></p>
+        </main>
+    </div>
+</body>
+</html>

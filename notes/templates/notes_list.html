@@ -1,44 +1,454 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notes</title>
+    <title>My Notes - FundooNotes</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        a { color: #4f46e5; text-decoration: none; margin-right: 10px; }
-        a:hover { text-decoration: underline; }
-        .btn { padding: 8px 16px; background: #4f46e5; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .note { border: 1px solid #ddd; padding: 12px; margin: 10px 0; border-radius: 4px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            max-hieght: 70vh;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .user-info {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-bar {
+            flex: 1;
+            min-width: 250px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .filter-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .btn-primary {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .notes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .note-card {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .note-card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .note-color-bar {
+            width: 100%;
+            height: 4px;
+        }
+
+        .note-content {
+            padding: 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+
+        .note-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            flex: 1;
+            word-break: break-word;
+        }
+
+        .note-badge {
+            display: flex;
+            gap: 6px;
+            font-size: 18px;
+        }
+
+        .pin-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            opacity: 0.5;
+        }
+
+        .pin-btn:hover {
+            opacity: 1;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .pin-btn.active {
+            opacity: 1;
+            background: rgba(255, 193, 7, 0.2);
+        }
+
+        .note-text {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.4;
+            margin-bottom: 12px;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+
+        .note-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .note-label {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #667eea;
+        }
+
+        .note-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .note-action-btn {
+            padding: 6px 12px;
+            border: none;
+            background: none;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .note-action-btn:hover {
+            color: #764ba2;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .pagination a, .pagination span {
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #667eea;
+            font-size: 13px;
+        }
+
+        .pagination a:hover {
+            background: #f5f5f5;
+        }
+
+        .pagination .current {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 20px;
+            transition: gap 0.2s;
+        }
+
+        .back-link:hover {
+            gap: 10px;
+        }
+
+        .label-select {
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>My Notes</h1>
-        <p>User: {{ user.name }}</p>
-        <a href="{% url 'home' user.id %}">← Back to Home</a>
-        <a href="{% url 'note-create' user.id %}" class="btn">+ New Note</a>
-        
-        {% if notes %}
-            <div class="notes-list">
-                {% for note in notes %}
-                    <div class="note">
-                        <h3>{{ note.title }}</h3>
-                        <p>{{ note.content|truncatewords:20 }}</p>
-                        {% if note.label %}
-                            <small>Label: <strong>{{ note.label.name }}</strong></small>
-                        {% endif %}
-                        <p>
-                            <a href="{% url 'note-update' user.id note.id %}">Edit</a> |
-                            <a href="{% url 'note-delete' user.id note.id %}">Delete</a>
-                        </p>
-                    </div>
-                {% endfor %}
+        <header>
+            <div>
+                <h1>📝 My Notes</h1>
+                <div class="user-info">{{ user.name }}</div>
             </div>
-        {% else %}
-            <p>No notes yet. <a href="{% url 'note-create' user.id %}">Create one!</a></p>
-        {% endif %}
+            <a href="{% url 'home' user.id %}" class="btn-primary">← Back to Home</a>
+        </header>
+
+        <div class="content">
+            <a href="{% url 'home' user.id %}" class="back-link">← Back Home</a>
+
+            <!-- Toolbar with Search & Filters -->
+            <div class="toolbar">
+                <div class="filter-buttons">
+                    {% if selected_archive == "true" %}
+                        <a href="{% url 'notes-list' user.id %}" class="filter-btn">📝 All Notes</a>
+                        <a href="?archive=true" class="filter-btn active">📦 Archived</a>
+                    {% else %}
+                        <a href="{% url 'notes-list' user.id %}" class="filter-btn active">📝 All Notes</a>
+                        <a href="?archive=true" class="filter-btn">📦 Archived</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if selected_archive != "true" %}
+            <div class="toolbar">
+                <div class="filter-buttons">
+                    <a href="?pin=true" class="filter-btn {% if selected_pin %}active{% endif %}">📌 Pinned</a>
+                    {% if selected_pin %}
+                        <a href="{% url 'notes-list' user.id %}" class="filter-btn" style="background: #f5f5f5;">✕ Clear Filters</a>
+                    {% endif %}
+                </div>
+
+                <select class="label-select" onchange="window.location='?label=' + this.value">
+                    <option value="">🏷️ All Labels</option>
+                    {% for label in labels %}
+                        <option value="{{ label.id }}" {% if label.id|stringformat:"s" == selected_label_id %}selected{% endif %}>
+                            {{ label.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <a href="{% url 'note-create' user.id %}" class="btn-primary">+ New Note</a>
+            </div>
+            {% endif %}
+
+            <div class="toolbar">
+                <div class="search-bar">
+                    <form method="get" style="display: flex; width: 100%; gap: 10px;">
+                        <input type="text" name="search" placeholder="🔍 Search notes..." value="{{ selected_search }}">
+                        <button type="submit" class="btn-primary">Search</button>
+                        {% if selected_search %}
+                            <a href="{% url 'notes-list' user.id %}" class="btn-primary" style="background: #999;">Clear</a>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+
+            <!-- Notes Grid -->
+            {% if notes %}
+                <div class="notes-grid">
+                    {% for note in notes %}
+                        <div class="note-card">
+                            <div class="note-color-bar" style="background-color: {{ note.color }}"></div>
+                            <div class="note-content">
+                                <div class="note-header">
+                                    <h3 class="note-title">{{ note.title }}</h3>
+                                    <form method="post" action="{% url 'note-toggle-pin' user.id note.id %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="pin-btn {% if note.is_pinned %}active{% endif %}" title="{% if note.is_pinned %}Unpin{% else %}Pin{% endif %}">
+                                            📌
+                                        </button>
+                                    </form>
+                                    {% if note.is_archived %}
+                                        <span title="Archived" style="font-size: 18px;">📦</span>
+                                    {% endif %}
+                                </div>
+                                <p class="note-text">{{ note.content }}</p>
+                                <div class="note-footer">
+                                    <div>
+                                        {% if note.label %}
+                                            <span class="note-label">{{ note.label.name }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="note-actions">
+                                        <a href="{% url 'note-update' user.id note.id %}" class="note-action-btn">✏️ Edit</a>
+                                        {% if selected_archive == "true" %}
+                                            <form method="post" action="{% url 'note-unarchive' user.id note.id %}" style="display: inline;">
+                                                {% csrf_token %}
+                                                <button type="submit" class="note-action-btn" style="background: none; border: none; padding: 6px 12px; font-weight: 600; cursor: pointer;">↩️ Unarchive</button>
+                                            </form>
+                                            <form method="post" action="{% url 'note-permanent-delete' user.id note.id %}" style="display: inline;" onsubmit="return confirm('Permanently delete this note?');">
+                                                {% csrf_token %}
+                                                <button type="submit" class="note-action-btn" style="background: none; border: none; padding: 6px 12px; font-weight: 600; color: #d32f2f; cursor: pointer;">🗑️ Delete</button>
+                                            </form>
+                                        {% else %}
+                                            <form method="post" action="{% url 'note-delete' user.id note.id %}" style="display: inline;">
+                                                {% csrf_token %}
+                                                <button type="submit" class="note-action-btn" style="background: none; border: none; padding: 6px 12px; font-weight: 600; cursor: pointer;" onclick="return confirm('Archive this note?');">📦 Archive</button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                    <div class="pagination">
+                        {% if page_obj.has_previous %}
+                            <a href="?page=1{% if selected_search %}&search={{ selected_search }}{% endif %}{% if selected_pin %}&pin=true{% endif %}{% if selected_archive %}&archive=true{% endif %}{% if selected_label_id %}&label={{ selected_label_id }}{% endif %}">First</a>
+                            <a href="?page={{ page_obj.previous_page_number }}{% if selected_search %}&search={{ selected_search }}{% endif %}{% if selected_pin %}&pin=true{% endif %}{% if selected_archive %}&archive=true{% endif %}{% if selected_label_id %}&label={{ selected_label_id }}{% endif %}">← Previous</a>
+                        {% endif %}
+
+                        <span class="current">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}{% if selected_search %}&search={{ selected_search }}{% endif %}{% if selected_pin %}&pin=true{% endif %}{% if selected_archive %}&archive=true{% endif %}{% if selected_label_id %}&label={{ selected_label_id }}{% endif %}">Next →</a>
+                            <a href="?page={{ page_obj.paginator.num_pages }}{% if selected_search %}&search={{ selected_search }}{% endif %}{% if selected_pin %}&pin=true{% endif %}{% if selected_archive %}&archive=true{% endif %}{% if selected_label_id %}&label={{ selected_label_id }}{% endif %}">Last</a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="empty-state">
+                    <h3>📭 No Notes Yet</h3>
+                    <p>Create your first note to get started!</p>
+                    <a href="{% url 'note-create' user.id %}" class="btn-primary" style="margin-top: 20px;">+ Create Note</a>
+                </div>
+            {% endif %}
+        </div>
     </div>
 </body>
 </html>

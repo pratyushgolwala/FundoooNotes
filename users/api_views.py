@@ -7,6 +7,8 @@ from rest_framework import status
 
 from drf_spectacular.utils import extend_schema
 
+from users.tasks import send_verification_email
+
 from .models import User
 from .serializers import SignupSerializer, LoginSerializer, UserSerializer, TokenResponseSerializer, RefreshTokenSerializer
 from .token_utils import generate_tokens, decode_token
@@ -21,7 +23,7 @@ class SignupAPI(APIView):
         ser = SignupSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
 
-        data = cast(Dict[str, Any], ser.validated_data)  # type: ignore
+        data = cast(Dict[str, Any], ser.validated_data)
         try:
             user = User.objects.create(
                 name=data["username"],
@@ -32,18 +34,25 @@ class SignupAPI(APIView):
         except IntegrityError:
             return Response({"detail": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Send verification email asynchronously
+        send_verification_email.delay(user.pk)
+
         return Response(
-            UserSerializer(user).data,
+            {
+                "token_type": "Bearer",
+                "expires_in": 3600,
+                "user_id": user.pk,
+                "user": UserSerializer(user).data  # ✅ Proper structure, no unpacking
+            },
             status=status.HTTP_201_CREATED,
         )
-
 
 class LoginAPI(APIView):
     @extend_schema(request=LoginSerializer, responses={200: TokenResponseSerializer})
     def post(self, request):
         ser = LoginSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
-        data = cast(Dict[str, Any], ser.validated_data)  # type: ignore
+        data = cast(Dict[str, Any], ser.validated_data)
 
         identifier = data["username"]
         password = data["password"]
@@ -52,9 +61,14 @@ class LoginAPI(APIView):
         if not user or not check_password(password, user.password):
             return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
+        # ✅ CHECK EMAIL VERIFICATION
+        if not user.is_email_verified:
+            return Response(
+                {"detail": "Please verify your email before logging in. Check your inbox for verification link."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         request.session["user_id"] = user.pk
-        
-        # Generate both bearer and refresh tokens
         tokens = generate_tokens(user.pk)
         tokens["user_id"] = user.pk
         

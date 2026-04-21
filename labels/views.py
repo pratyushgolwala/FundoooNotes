@@ -17,7 +17,7 @@ def label_create(request, user_id):
         label = form.save(commit=False)
         label.user = user
         label.save()
-        return redirect("labels-list", user_id=user.id)
+        return redirect("labels-list", user_id=user.pk)
     return render(request, "label_form.html", {"form": form, "user": user})
 
 
@@ -27,7 +27,7 @@ def label_update(request, user_id, label_id):
     form = LabelForm(request.POST or None, instance=label)
     if request.method == "POST" and form.is_valid():
         form.save()
-        return redirect("labels-list", user_id=user.id)
+        return redirect("labels-list", user_id=user.pk)
     return render(request, "label_form.html", {"form": form, "user": user, "label": label})
 
 
@@ -36,6 +36,6 @@ def label_delete(request, user_id, label_id):
     label = Label.objects.get(pk=label_id, user=user)
     if request.method == "POST":
         label.delete()
-        return redirect("labels-list", user_id=user.id)
+        return redirect("labels-list", user_id=user.pk)
     return render(request, "label_confirm_delete.html", {"label": label, "user": user})
 

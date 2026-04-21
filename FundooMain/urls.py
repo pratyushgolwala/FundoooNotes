@@ -18,11 +18,11 @@ from django.contrib import admin
 from django.urls import path
 
 # User auth views
-from users.views import login_view, signup_view, home
+from users.views import login_view, signup_view, home, verify_email, resend_verification_email
 from users.api_views import SignupAPI, LoginAPI, HomeAPI
 
 # Note views  
-from notes.views import notes_list, note_create, note_update, note_delete
+from notes.views import notes_list, note_create, note_update, note_delete, note_unarchive, note_permanent_delete, note_toggle_pin
 from notes.api_views import NotesAPI, NoteDetailAPI
 
 # Label views
@@ -35,6 +35,7 @@ from django.contrib.auth import logout as auth_logout
 # Swagger
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from django.conf import settings
+
 
 
 def logout_view(request):
@@ -68,11 +69,16 @@ urlpatterns = [
     path("users/<int:user_id>/notes/new/", note_create, name="note-create"),
     path("users/<int:user_id>/notes/<int:note_id>/edit/", note_update, name="note-update"),
     path("users/<int:user_id>/notes/<int:note_id>/delete/", note_delete, name="note-delete"),
+    path("users/<int:user_id>/notes/<int:note_id>/unarchive/", note_unarchive, name="note-unarchive"),
+    path("users/<int:user_id>/notes/<int:note_id>/permanent-delete/", note_permanent_delete, name="note-permanent-delete"),
+    path("users/<int:user_id>/notes/<int:note_id>/toggle-pin/", note_toggle_pin, name="note-toggle-pin"),
     # Labels
     path("users/<int:user_id>/labels/", labels_list, name="labels-list"),
     path("users/<int:user_id>/labels/new/", label_create, name="label-create"),
     path("users/<int:user_id>/labels/<int:label_id>/edit/", label_update, name="label-update"),
     path("users/<int:user_id>/labels/<int:label_id>/delete/", label_delete, name="label-delete"),
+    path("verify-email/<str:token>/", verify_email , name="verify-email"),
+    path('resend-verification/', resend_verification_email, name='resend-verification'),
 ]
 
 # API endpoints
