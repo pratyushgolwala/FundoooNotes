@@ -81,6 +81,14 @@
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
+        .controls-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
         .filter-buttons {
             display: flex;
             gap: 10px;
@@ -329,7 +337,7 @@
             <a href="{% url 'home' user.id %}" class="back-link">← Back Home</a>
 
             <!-- Toolbar with Search & Filters -->
-            <div class="toolbar">
+            <div class="controls-row">
                 <div class="filter-buttons">
                     {% if selected_archive == "true" %}
                         <a href="{% url 'notes-list' user.id %}" class="filter-btn">📝 All Notes</a>
@@ -338,38 +346,34 @@
                         <a href="{% url 'notes-list' user.id %}" class="filter-btn active">📝 All Notes</a>
                         <a href="?archive=true" class="filter-btn">📦 Archived</a>
                     {% endif %}
-                </div>
-            </div>
-
-            {% if selected_archive != "true" %}
-            <div class="toolbar">
-                <div class="filter-buttons">
+                
+                {% if selected_archive != "true" %}
                     <a href="?pin=true" class="filter-btn {% if selected_pin %}active{% endif %}">📌 Pinned</a>
                     {% if selected_pin %}
                         <a href="{% url 'notes-list' user.id %}" class="filter-btn" style="background: #f5f5f5;">✕ Clear Filters</a>
                     {% endif %}
+                
+                    <select class="label-select filter-btn" onchange="window.location='?label=' + this.value" style="padding: 8px 12px; height: auto;">
+                        <option value="">🏷️ All Labels</option>
+                        {% for label in labels %}
+                            <option value="{{ label.id }}" {% if label.id|stringformat:"s" == selected_label_id %}selected{% endif %}>
+                                {{ label.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <a href="{% url 'note-create' user.id %}" class="btn-primary filter-btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">+ New Note</a>
+                {% endif %}
                 </div>
-
-                <select class="label-select" onchange="window.location='?label=' + this.value">
-                    <option value="">🏷️ All Labels</option>
-                    {% for label in labels %}
-                        <option value="{{ label.id }}" {% if label.id|stringformat:"s" == selected_label_id %}selected{% endif %}>
-                            {{ label.name }}
-                        </option>
-                    {% endfor %}
-                </select>
-
-                <a href="{% url 'note-create' user.id %}" class="btn-primary">+ New Note</a>
             </div>
-            {% endif %}
 
-            <div class="toolbar">
+            <div class="toolbar" style="margin-top: 10px;">
                 <div class="search-bar">
                     <form method="get" style="display: flex; width: 100%; gap: 10px;">
-                        <input type="text" name="search" placeholder="🔍 Search notes..." value="{{ selected_search }}">
-                        <button type="submit" class="btn-primary">Search</button>
+                        <input type="text" name="search" placeholder="🔍 Search notes..." value="{{ selected_search }}" style="border-radius: 8px;">
+                        <button type="submit" class="btn-primary" style="padding: 10px 24px; border-radius: 8px;">Search</button>
                         {% if selected_search %}
-                            <a href="{% url 'notes-list' user.id %}" class="btn-primary" style="background: #999;">Clear</a>
+                            <a href="{% url 'notes-list' user.id %}" class="btn-primary" style="background: #999; text-decoration: none; display: flex; align-items: center; padding: 0 16px; border-radius: 8px;">Clear</a>
                         {% endif %}
                     </form>
                 </div>

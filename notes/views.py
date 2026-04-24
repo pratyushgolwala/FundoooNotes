@@ -72,7 +72,7 @@ def notes_list(request, user_id):
 
 def note_create(request, user_id):
     user = User.objects.get(pk=user_id)
-    form = NoteForm(request.POST or None)
+    form = NoteForm(request.POST or None, user=user)
     if request.method == "POST" and form.is_valid():
         note = form.save(commit=False)
         note.user = user
@@ -84,7 +84,7 @@ def note_create(request, user_id):
 def note_update(request, user_id, note_id):
     user = User.objects.get(pk=user_id)
     note = Note.objects.get(pk=note_id, user=user)
-    form = NoteForm(request.POST or None, instance=note)
+    form = NoteForm(request.POST or None, instance=note, user=user)
     if request.method == "POST" and form.is_valid():
         form.save()
         return redirect("notes-list", user_id=user.pk)

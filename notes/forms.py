@@ -1,8 +1,15 @@
 from django import forms
 from .models import Note
+from labels.models import Label
 
 
 class NoteForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if self.user:
+            self.fields['label'].queryset = Label.objects.filter(user=self.user)
+
     class Meta:
         model = Note
         fields = ["title", "content", "label", "color", "is_pinned", "is_archived"]

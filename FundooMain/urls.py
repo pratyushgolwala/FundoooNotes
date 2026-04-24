@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path
 
 # User auth views
-from users.views import login_view, signup_view, home, verify_email, resend_verification_email
+from users.views import login_view, signup_view, home, verify_email, resend_verification_email, verify_otp_view, resend_otp_view
 from users.api_views import SignupAPI, LoginAPI, HomeAPI
 
 # Note views  
@@ -79,6 +79,8 @@ urlpatterns = [
     path("users/<int:user_id>/labels/<int:label_id>/delete/", label_delete, name="label-delete"),
     path("verify-email/<str:token>/", verify_email , name="verify-email"),
     path('resend-verification/', resend_verification_email, name='resend-verification'),
+    path('verify-otp/', verify_otp_view, name='verify-otp'),
+    path('resend-otp/', resend_otp_view, name='resend-otp'),
 ]
 
 # API endpoints

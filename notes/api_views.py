@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.throttling import UserRateThrottle
 
 from drf_spectacular.utils import extend_schema
 
@@ -20,6 +21,14 @@ from users.token_utils import generate_tokens, decode_token
 from .models import Note
 from .serializers import NoteSerializer
 from users.tasks import send_verification_email
+
+
+class NotesRateThrottle(UserRateThrottle):
+    scope = "notes"
+
+
+class TokenRateThrottle(UserRateThrottle):
+    scope = "user"
 
 
 def _get_bearer_token(request):
@@ -78,6 +87,8 @@ def _clear_user_notes_cache(user_id):
 
 
 class TokenAPI(APIView):
+    throttle_classes = [TokenRateThrottle]
+
     @extend_schema(request=LoginSerializer, responses={200: TokenResponseSerializer})
     def post(self, request):
         ser = LoginSerializer(data=request.data)
@@ -98,6 +109,8 @@ class TokenAPI(APIView):
         return Response(tokens, status=status.HTTP_200_OK)
 
 class NotesAPI(APIView):
+    throttle_classes = [NotesRateThrottle]
+
     @extend_schema(responses={200: NoteSerializer(many=True)})
     def get(self, request):
         user, error = _get_user_from_request(request)
@@ -190,6 +203,8 @@ class NotesAPI(APIView):
 
 
 class NoteDetailAPI(APIView):
+    throttle_classes = [NotesRateThrottle]
+
     @extend_schema(responses={200: NoteSerializer})
     def get(self, request, note_id):
         user, error = _get_user_from_request(request)

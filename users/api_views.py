@@ -4,10 +4,11 @@ from django.contrib.auth.hashers import make_password, check_password
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 
 from drf_spectacular.utils import extend_schema
 
-from users.tasks import send_verification_email
+from users.tasks import send_verification_email, send_otp_email
 
 from .models import User
 from .serializers import SignupSerializer, LoginSerializer, UserSerializer, TokenResponseSerializer, RefreshTokenSerializer
@@ -17,13 +18,24 @@ from typing import Any, Dict, cast
 import jwt
 
 
+class SignupRateThrottle(AnonRateThrottle):
+    scope = "signup"
+
+
+class LoginRateThrottle(AnonRateThrottle):
+    scope = "login"
+
+
 class SignupAPI(APIView):
+    throttle_classes = [SignupRateThrottle]
+
     @extend_schema(request=SignupSerializer, responses={201: UserSerializer})
     def post(self, request):
         ser = SignupSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
 
         data = cast(Dict[str, Any], ser.validated_data)
+        verification_method = cast(str, data.get("verification_method", "link"))
         try:
             user = User.objects.create(
                 name=data["username"],
@@ -34,8 +46,11 @@ class SignupAPI(APIView):
         except IntegrityError:
             return Response({"detail": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Send verification email asynchronously
-        send_verification_email.delay(user.pk)
+        # Send selected verification method asynchronously
+        if verification_method == "otp":
+            send_otp_email.delay(user.pk)
+        else:
+            send_verification_email.delay(user.pk)
 
         return Response(
             {
@@ -48,6 +63,8 @@ class SignupAPI(APIView):
         )
 
 class LoginAPI(APIView):
+    throttle_classes = [LoginRateThrottle]
+
     @extend_schema(request=LoginSerializer, responses={200: TokenResponseSerializer})
     def post(self, request):
         ser = LoginSerializer(data=request.data)
@@ -64,7 +81,7 @@ class LoginAPI(APIView):
         # ✅ CHECK EMAIL VERIFICATION
         if not user.is_email_verified:
             return Response(
-                {"detail": "Please verify your email before logging in. Check your inbox for verification link."},
+                {"detail": "Please verify your account before logging in using OTP or verification link sent to your email."},
                 status=status.HTTP_403_FORBIDDEN
             )
 
@@ -76,6 +93,8 @@ class LoginAPI(APIView):
 
 
 class HomeAPI(APIView):
+    throttle_classes = [UserRateThrottle]
+
     @extend_schema(responses={200: UserSerializer})
     def get(self, request):
         user_id = request.session.get("user_id")
@@ -90,6 +109,8 @@ class HomeAPI(APIView):
 
 
 class RefreshTokenAPI(APIView):
+    throttle_classes = [UserRateThrottle]
+
     @extend_schema(request=RefreshTokenSerializer, responses={200: TokenResponseSerializer})
     def post(self, request):
         ser = RefreshTokenSerializer(data=request.data)

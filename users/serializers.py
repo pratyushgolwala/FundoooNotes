@@ -6,6 +6,11 @@ class SignupSerializer(serializers.Serializer):
     email = serializers.EmailField()
     phone_number = serializers.CharField(max_length=15)
     password = serializers.CharField(write_only=True, min_length=6)
+    verification_method = serializers.ChoiceField(
+        choices=["link", "otp"],
+        required=False,
+        default="link",
+    )
 
 
 class LoginSerializer(serializers.Serializer):

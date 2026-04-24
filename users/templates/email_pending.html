@@ -155,11 +155,19 @@
     <div class="wrap">
         <main class="card">
             <div class="icon">✉️</div>
-            <h1>Verify Your Email</h1>
+            <h1>Verify Your Account</h1>
+            {% if verification_method == 'otp' %}
+            <p class="subtitle">We've sent an OTP to your email</p>
+            {% else %}
             <p class="subtitle">We've sent a verification link to your email</p>
+            {% endif %}
             
             <div class="info-box">
-                <p><strong>Check your inbox!</strong> Look for an email from FundooNotes with a verification link.</p>
+                {% if verification_method == 'otp' %}
+                <p><strong>Check your inbox!</strong> Use the OTP from your email to verify your account.</p>
+                {% else %}
+                <p><strong>Check your inbox!</strong> Click the verification link from your email to verify your account.</p>
+                {% endif %}
             </div>
             
             <div class="email-display">
@@ -171,18 +179,33 @@
                     <div class="step-num">1</div>
                     <div>Open the email from FundooNotes</div>
                 </div>
+                {% if verification_method == 'otp' %}
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div>Open the OTP verification page and enter the code</div>
+                </div>
+                {% else %}
                 <div class="step">
                     <div class="step-num">2</div>
                     <div>Click the verification link</div>
                 </div>
+                {% endif %}
                 <div class="step">
                     <div class="step-num">3</div>
                     <div>You'll be redirected to login</div>
                 </div>
             </div>
+
+            {% if verification_method == 'otp' %}
+            <a class="btn" href="{% url 'verify-otp' %}">Verify Using OTP</a>
+            {% endif %}
             
             <p style="font-size: 13px; color: var(--muted); text-align: center; margin: 16px 0;">
-                🕐 The link expires in 24 hours
+                {% if verification_method == 'otp' %}
+                🕐 OTP expires in 10 minutes
+                {% else %}
+                🕐 Verification link expires in 24 hours
+                {% endif %}
             </p>
             
             <button class="btn" onclick="window.history.back()">← Go Back</button>

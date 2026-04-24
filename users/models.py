@@ -10,6 +10,8 @@ class User(models.Model):
     # ✅ Add these new fields for email verification
     is_email_verified = models.BooleanField(default=False)
     email_verification_token = models.CharField(max_length=255, null=True, blank=True)
+    otp_code = models.CharField(max_length=6, null=True, blank=True)
+    otp_expires_at = models.DateTimeField(null=True, blank=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -77,7 +77,7 @@ REST_FRAMEWORK = {
         "anon": "100/hour",
         "user": "1000/hour",
         "signup": "5/hour",
-        "login": "100/hour",
+        "login": "5/hour",
         "notes": "500/hour",
     },
 }
@@ -136,6 +136,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
+    'FundooMain.middleware.RequestExecutionTimeMiddleware',
 ]
 
 ROOT_URLCONF = 'FundooMain.urls'
@@ -224,6 +226,7 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
+CELERY_IMPORTS = ('users.tasks',)
 
 # Celery Beat Schedule (for cleanup tasks)
 CELERY_BEAT_SCHEDULE = {
