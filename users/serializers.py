@@ -6,11 +6,6 @@ class SignupSerializer(serializers.Serializer):
     email = serializers.EmailField()
     phone_number = serializers.CharField(max_length=15)
     password = serializers.CharField(write_only=True, min_length=6)
-    verification_method = serializers.ChoiceField(
-        choices=["link", "otp"],
-        required=False,
-        default="link",
-    )
 
 
 class LoginSerializer(serializers.Serializer):
@@ -35,3 +30,19 @@ class TokenResponseSerializer(serializers.Serializer):
 
 class RefreshTokenSerializer(serializers.Serializer):
     refresh_token = serializers.CharField()
+
+
+class SignupResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+    user_id = serializers.IntegerField()
+
+
+class LoginResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+    user_id = serializers.IntegerField()
+
+
+class VerifyOtpRequestSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
+    otp = serializers.CharField(max_length=6)
+

@@ -126,15 +126,21 @@ def login_view(request):
             # ✅ CHECK EMAIL VERIFICATION
             if not user.is_email_verified:
                 return render(request, 'login.html', {
-                    'error': 'Please verify your account first using OTP or the verification link sent to your email.',
+                    'error': 'Please verify your account first using the verification link sent to your email.',
                     'email_pending': user.email
                 })
 
             redis_client.delete(attempt_key)
             redis_client.delete(disabled_key)
             
-            request.session['user_id'] = user.pk
-            return redirect('home', user_id=user.pk)
+            # ✅ SEND OTP FOR LOGIN MFA
+            send_otp_email.delay(user.pk)
+            
+            # Show OTP form to complete login
+            return render(request, 'otp_verify.html', {
+                'email': user.email,
+                'message': 'Login successful. Please complete the final step by entering the 6-digit OTP sent to your email.'
+            })
         else:
             attempts = _increment_with_setex(attempt_key, LOGIN_ATTEMPT_WINDOW_SECONDS)
             if attempts >= LOGIN_ATTEMPT_LIMIT:
@@ -171,10 +177,6 @@ def signup_view(request):
         email = request.POST.get('email')
         phone_number = request.POST.get('phone_number')
         password = request.POST.get('password')
-        verification_method = request.POST.get('verification_method', 'link')
-
-        if verification_method not in ('link', 'otp'):
-            return render(request, 'signup.html', {'error': 'Please choose a valid verification method.'})
         
         try:
             user = User.objects.create(
@@ -183,22 +185,13 @@ def signup_view(request):
                 phone_number=phone_number,
                 password=make_password(password)
             )
-            # Send only the selected verification method
-            if verification_method == 'otp':
-                send_otp_email.delay(user.pk)
-                message = 'OTP verification email sent! Check your inbox.'
-                return render(request, 'otp_verify.html', {
-                    'email': email,
-                    'message': message,
-                })
-            else:
-                send_verification_email.delay(user.pk)
-                message = 'Verification link email sent! Click the link from your inbox to verify your account.'
-                return render(request, 'email_pending.html', {
-                    'email': email,
-                    'message': message,
-                    'verification_method': verification_method,
-                })
+            # Send only the verification link for signup
+            send_verification_email.delay(user.pk)
+            message = 'Verification link email sent! Click the link from your inbox to verify your account.'
+            return render(request, 'email_pending.html', {
+                'email': email,
+                'message': message,
+            })
         except IntegrityError:
             return render(request, 'signup.html', {'error': 'Email already exists'})
     return render(request, 'signup.html')
@@ -214,9 +207,6 @@ def verify_otp_view(request):
         except User.DoesNotExist:
             return render(request, "otp_verify.html", {"error": "User not found.", "email": email})
 
-        if user.is_email_verified:
-            return render(request, "otp_verify.html", {"success": "Email already verified.", "email": email})
-
         if not user.otp_code or not user.otp_expires_at:
             return render(request, "otp_verify.html", {"error": "No OTP found. Please request a new one.", "email": email})
 
@@ -226,13 +216,13 @@ def verify_otp_view(request):
         if otp != user.otp_code:
             return render(request, "otp_verify.html", {"error": "Invalid OTP.", "email": email})
 
-        user.is_email_verified = True
         user.otp_code = None
         user.otp_expires_at = None
-        user.email_verification_token = None
-        user.save(update_fields=["is_email_verified", "otp_code", "otp_expires_at", "email_verification_token"])
+        user.save(update_fields=["otp_code", "otp_expires_at"])
 
-        return render(request, "otp_verify.html", {"success": "Email verified successfully. You can now log in.", "email": email})
+        # OTP is successful, MFA passed, establish session correctly
+        request.session['user_id'] = user.pk
+        return redirect('home', user_id=user.pk)
 
     # For GET requests we might pass email if we redirect with query param or just simple render
     email = request.GET.get('email', '')
@@ -243,8 +233,6 @@ def resend_otp_view(request):
         email = request.POST.get("email")
         try:
             user = User.objects.get(email=email)
-            if user.is_email_verified:
-                return render(request, "otp_verify.html", {"success": "Email already verified.", "email": email})
             send_otp_email.delay(user.pk)
             return render(request, "otp_verify.html", {"success": "OTP resent successfully. Check your inbox.", "email": email})
         except User.DoesNotExist:

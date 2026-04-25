@@ -11,11 +11,21 @@ from drf_spectacular.utils import extend_schema
 from users.tasks import send_verification_email, send_otp_email
 
 from .models import User
-from .serializers import SignupSerializer, LoginSerializer, UserSerializer, TokenResponseSerializer, RefreshTokenSerializer
+from .serializers import (
+    SignupSerializer, 
+    LoginSerializer, 
+    UserSerializer, 
+    TokenResponseSerializer, 
+    RefreshTokenSerializer,
+    SignupResponseSerializer,
+    LoginResponseSerializer,
+    VerifyOtpRequestSerializer
+)
 from .token_utils import generate_tokens, decode_token
 
 from typing import Any, Dict, cast
 import jwt
+from django.utils import timezone
 
 
 class SignupRateThrottle(AnonRateThrottle):
@@ -29,13 +39,12 @@ class LoginRateThrottle(AnonRateThrottle):
 class SignupAPI(APIView):
     throttle_classes = [SignupRateThrottle]
 
-    @extend_schema(request=SignupSerializer, responses={201: UserSerializer})
+    @extend_schema(request=SignupSerializer, responses={201: SignupResponseSerializer})
     def post(self, request):
         ser = SignupSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
 
         data = cast(Dict[str, Any], ser.validated_data)
-        verification_method = cast(str, data.get("verification_method", "link"))
         try:
             user = User.objects.create(
                 name=data["username"],
@@ -46,18 +55,13 @@ class SignupAPI(APIView):
         except IntegrityError:
             return Response({"detail": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Send selected verification method asynchronously
-        if verification_method == "otp":
-            send_otp_email.delay(user.pk)
-        else:
-            send_verification_email.delay(user.pk)
+        # Send strictly email verification logic
+        send_verification_email.delay(user.pk)
 
         return Response(
             {
-                "token_type": "Bearer",
-                "expires_in": 3600,
+                "detail": "Account created successfully. Please check your email for a verification link.",
                 "user_id": user.pk,
-                "user": UserSerializer(user).data  # ✅ Proper structure, no unpacking
             },
             status=status.HTTP_201_CREATED,
         )
@@ -65,7 +69,7 @@ class SignupAPI(APIView):
 class LoginAPI(APIView):
     throttle_classes = [LoginRateThrottle]
 
-    @extend_schema(request=LoginSerializer, responses={200: TokenResponseSerializer})
+    @extend_schema(request=LoginSerializer, responses={202: LoginResponseSerializer})
     def post(self, request):
         ser = LoginSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
@@ -81,10 +85,49 @@ class LoginAPI(APIView):
         # ✅ CHECK EMAIL VERIFICATION
         if not user.is_email_verified:
             return Response(
-                {"detail": "Please verify your account before logging in using OTP or verification link sent to your email."},
+                {"detail": "Please verify your account via the email link before logging in."},
                 status=status.HTTP_403_FORBIDDEN
             )
 
+        # Trigger OTP for MFA during login
+        send_otp_email.delay(user.pk)
+        
+        return Response(
+            {"detail": "OTP sent to email. Proceed to MFA verification.", "user_id": user.pk},
+            status=status.HTTP_202_ACCEPTED
+        )
+
+
+class VerifyOtpAPI(APIView):
+    throttle_classes = [LoginRateThrottle]
+
+    @extend_schema(request=VerifyOtpRequestSerializer, responses={200: TokenResponseSerializer})
+    def post(self, request):
+        user_id = request.data.get("user_id")
+        otp = request.data.get("otp")
+
+        if not user_id or not otp:
+            return Response({"detail": "User ID and OTP are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = User.objects.filter(pk=user_id).first()
+        if not user:
+            return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if not user.otp_code or not user.otp_expires_at:
+            return Response({"detail": "No OTP found. Please request a new one."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if timezone.now() > user.otp_expires_at:
+            return Response({"detail": "OTP expired. Please resend OTP."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if otp != user.otp_code:
+             return Response({"detail": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Clear OTP after successful use
+        user.otp_code = None
+        user.otp_expires_at = None
+        user.save(update_fields=["otp_code", "otp_expires_at"])
+
+        # Auth complete
         request.session["user_id"] = user.pk
         tokens = generate_tokens(user.pk)
         tokens["user_id"] = user.pk

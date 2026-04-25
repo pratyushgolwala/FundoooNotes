@@ -5,7 +5,7 @@ from .models import Note
 class NoteSerializer(serializers.ModelSerializer):
     label_id = serializers.PrimaryKeyRelatedField(
         source="label",
-        queryset=Note._meta.get_field('label').related_model.objects.all(),
+        queryset=Note._meta.get_field('label').related_model.objects.all(), #type:ignore
         allow_null=True,
         required=False,
     )

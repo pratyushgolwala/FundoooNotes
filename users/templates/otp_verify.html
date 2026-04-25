@@ -137,7 +137,7 @@
       <div class="card">
         <div class="icon">🔢</div>
         <div class="brand">
-          <h1>Verify with OTP</h1>
+          <h1>Two-Factor Login</h1>
           <p class="lead">We sent a 6-digit code to your email.</p>
         </div>
 
@@ -157,7 +157,7 @@
             <input class="otp-input" type="text" name="otp" placeholder="000000" maxlength="6" pattern="\d{6}" required autofocus />
           </div>
 
-          <button class="btn" type="submit">Verify Account</button>
+          <button class="btn" type="submit">Complete Login</button>
         </form>
 
         <form method="post" action="{% url 'resend-otp' %}">

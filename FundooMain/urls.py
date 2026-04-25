@@ -19,7 +19,7 @@ from django.urls import path
 
 # User auth views
 from users.views import login_view, signup_view, home, verify_email, resend_verification_email, verify_otp_view, resend_otp_view
-from users.api_views import SignupAPI, LoginAPI, HomeAPI
+from users.api_views import SignupAPI, LoginAPI, HomeAPI, VerifyOtpAPI
 
 # Note views  
 from notes.views import notes_list, note_create, note_update, note_delete, note_unarchive, note_permanent_delete, note_toggle_pin
@@ -87,6 +87,7 @@ urlpatterns = [
 urlpatterns += [
     path("api/signup/", SignupAPI.as_view(), name="api-signup"),
     path("api/login/", LoginAPI.as_view(), name="api-login"),
+    path("api/verify-otp/", VerifyOtpAPI.as_view(), name="api-verify-otp"),
     path("api/home/", HomeAPI.as_view(), name="api-home"),
     path("api/notes/", NotesAPI.as_view(), name="api-notes"),
     path("api/notes/<int:note_id>/", NoteDetailAPI.as_view(), name="api-note-detail"),
