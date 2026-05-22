@@ -1,0 +1,42 @@
+# Django & REST Framework
+Django==5.2.13
+djangorestframework==3.14.0
+drf-spectacular==0.26.2
+
+# Authentication & Security
+PyJWT==2.8.1
+
+# Database & ORM
+psycopg2-binary==2.9.9
+
+# Celery & Task Queue
+celery==5.3.4
+redis==5.0.1
+
+# Caching
+django-redis==5.4.0
+
+# Email
+django-anymail==10.0
+
+# Testing
+pytest==7.4.3
+pytest-django==4.5.2
+pytest-cov==4.1.0
+
+# Code Quality
+black==23.12.0
+flake8==6.1.0
+isort==5.13.2
+
+# Development
+django-debug-toolbar==4.2.0
+python-dotenv==1.0.0
+
+# Export/Excel
+openpyxl==3.11.0
+drf-excel==2.6.0
+
+# Utils
+python-dateutil==2.8.2
+requests==2.31.0

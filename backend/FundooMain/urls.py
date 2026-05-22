@@ -1,0 +1,154 @@
+"""
+URL configuration for FundooMain project.
+
+The `urlpatterns` list routes URLs to views. For more information please see:
+    https://docs.djangoproject.com/en/5.2/topics/http/urls/
+Examples:
+Function views
+    1. Add an import:  from my_app import views
+    2. Add a URL to urlpatterns:  path('', views.home, name='home')
+Class-based views
+    1. Add an import:  from other_app.views import Home
+    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
+Including another URLconf
+    1. Import the include() function: from django.urls import include, path
+    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+"""
+from django.contrib import admin
+from django.urls import path
+from django.http import JsonResponse
+
+# User auth views
+from users.views import login_view, signup_view, home, verify_email, resend_verification_email, verify_otp_view, resend_otp_view
+from users.api_views import SignupAPI, LoginAPI, HomeAPI, VerifyOtpAPI
+import users.api_views as user_api_views
+
+# Note views  
+from notes.views import notes_list, note_create, note_update, note_delete, note_unarchive, note_permanent_delete, note_toggle_pin
+from notes.api_views import NotesAPI, NoteDetailAPI
+
+# Label views
+from labels.views import labels_list, label_create, label_update, label_delete
+from labels.api_views import LabelsAPI
+# Logout as utility
+from django.views.generic import TemplateView
+from django.contrib.auth import logout as auth_logout
+
+# Swagger
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+from django.conf import settings
+
+from notes.api_views import (
+    NotesAPI,
+    NoteDetailAPI,
+    NoteRestoreAPI,
+    NotePermanentDeleteAPI,
+    NoteCollaboratorsAPI,
+    NoteCollaboratorDetailAPI,
+    NoteInvitationActionAPI,
+    PendingInvitationsAPI,
+)
+
+
+def session_hit_counts_view(request):
+    counts = request.session.get('api_hit_counts', {})
+    if isinstance(counts, dict) and 'routes' in counts:
+        counts = counts.get('routes', {})
+
+    if not isinstance(counts, dict):
+        counts = {}
+
+    counts = {
+        endpoint: count
+        for endpoint, count in counts.items()
+        if endpoint != 'GET api/debug/session-hit-counts/'
+    }
+
+    return JsonResponse(
+        {
+            'session_key': request.session.session_key,
+            'routes': [
+                {'endpoint': endpoint, 'count': count}
+                for endpoint, count in counts.items()
+            ],
+        }
+    )
+
+
+def logout_view(request):
+    """Simple logout view"""
+    user_id = request.session.get('user_id')
+    if request.method == "POST":
+        request.session.flush()
+        from django.shortcuts import redirect
+        return redirect('login')
+    from django.shortcuts import render
+    user = None
+    if user_id:
+        try:
+            from users.models import User
+            user = User.objects.get(id=user_id)
+        except:
+            pass
+    return render(request, "logout_confirm.html", {'user': user})
+
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    # User authentication
+    path('', login_view, name='login'),
+    path('login/', login_view, name='login'),
+    path('signup/', signup_view, name='signup'),
+    path('logout/', logout_view, name='logout'),
+    path('home/<int:user_id>/', home, name='home'),
+    # Notes
+    path("users/<int:user_id>/notes/", notes_list, name="notes-list"),
+    path("users/<int:user_id>/notes/new/", note_create, name="note-create"),
+    path("users/<int:user_id>/notes/<int:note_id>/edit/", note_update, name="note-update"),
+    path("users/<int:user_id>/notes/<int:note_id>/delete/", note_delete, name="note-delete"),
+    path("users/<int:user_id>/notes/<int:note_id>/unarchive/", note_unarchive, name="note-unarchive"),
+    path("users/<int:user_id>/notes/<int:note_id>/permanent-delete/", note_permanent_delete, name="note-permanent-delete"),
+    path("users/<int:user_id>/notes/<int:note_id>/toggle-pin/", note_toggle_pin, name="note-toggle-pin"),
+    # Labels
+    path("users/<int:user_id>/labels/", labels_list, name="labels-list"),
+    path("users/<int:user_id>/labels/new/", label_create, name="label-create"),
+    path("users/<int:user_id>/labels/<int:label_id>/edit/", label_update, name="label-update"),
+    path("users/<int:user_id>/labels/<int:label_id>/delete/", label_delete, name="label-delete"),
+    path("verify-email/<str:token>/", verify_email , name="verify-email"),
+    path('resend-verification/', resend_verification_email, name='resend-verification'),
+    path('verify-otp/', verify_otp_view, name='verify-otp'),
+    path('resend-otp/', resend_otp_view, name='resend-otp'),
+    
+]
+
+# API endpoints
+urlpatterns += [
+    path("api/signup/", SignupAPI.as_view(), name="api-signup"),
+    path("api/labels/", LabelsAPI.as_view(), name="api-labels"),
+    path("api/login/", LoginAPI.as_view(), name="api-login"),
+    path("api/verify-otp/", VerifyOtpAPI.as_view(), name="api-verify-otp"),
+    path("api/auth/verify-email/", user_api_views.VerifyEmailAPI.as_view(), name="api-verify-email"),
+    path("api/home/", HomeAPI.as_view(), name="api-home"),
+    path("api/debug/session-hit-counts/", session_hit_counts_view, name="api-session-hit-counts"),
+    path("api/notes/", NotesAPI.as_view(), name="api-notes"),
+    path("api/notes/<int:note_id>/", NoteDetailAPI.as_view(), name="api-note-detail"),
+    path("api/notes/<int:note_id>/restore/", NoteRestoreAPI.as_view(), name="api-note-restore"),
+    path("api/notes/<int:note_id>/permanent-delete/", NotePermanentDeleteAPI.as_view(), name="api-note-permanent-delete"),
+    path("api/notes/<int:note_id>/collaborators/", NoteCollaboratorsAPI.as_view(), name="api-note-collaborators"),
+    path(
+        "api/notes/<int:note_id>/collaborators/<int:user_id>/",
+        NoteCollaboratorDetailAPI.as_view(),
+        name="api-note-collaborator-detail",
+    ),
+    path("api/notes/invitations/<str:token>/<str:action>/", NoteInvitationActionAPI.as_view(), name="api-note-invitation-action"),
+    path("api/invitations/", PendingInvitationsAPI.as_view(), name="api-pending-invitations"),
+]
+
+# Swagger UI
+if settings.DEBUG:
+    urlpatterns += [
+        path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+        path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+        path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+    ]
+

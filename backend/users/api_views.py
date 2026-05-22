@@ -1,13 +1,15 @@
 from django.db import IntegrityError
 from django.contrib.auth.hashers import make_password, check_password
 
-from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 
 from drf_spectacular.utils import extend_schema
+from common.api_response import EnvelopeAPIView
+import logging
 
+from common.api_response import EnvelopeAPIView
 from users.tasks import send_verification_email, send_otp_email
 
 from .models import User
@@ -36,8 +38,11 @@ class LoginRateThrottle(AnonRateThrottle):
     scope = "login"
 
 
-class SignupAPI(APIView):
+class SignupAPI(EnvelopeAPIView):
     throttle_classes = [SignupRateThrottle]
+    response_messages = {
+        "POST": "Account created successfully",
+    }
 
     @extend_schema(request=SignupSerializer, responses={201: SignupResponseSerializer})
     def post(self, request):
@@ -69,8 +74,11 @@ class SignupAPI(APIView):
             status=status.HTTP_201_CREATED,
         )
 
-class LoginAPI(APIView):
+class LoginAPI(EnvelopeAPIView):
     throttle_classes = [LoginRateThrottle]
+    response_messages = {
+        "POST": "OTP sent to email",
+    }
 
     @extend_schema(request=LoginSerializer, responses={202: LoginResponseSerializer})
     def post(self, request):
@@ -101,13 +109,21 @@ class LoginAPI(APIView):
         )
 
 
-class VerifyOtpAPI(APIView):
+class VerifyOtpAPI(EnvelopeAPIView):
     throttle_classes = [LoginRateThrottle]
+    response_messages = {
+        "POST": "OTP verified",
+    }
 
     @extend_schema(request=VerifyOtpRequestSerializer, responses={200: TokenResponseSerializer})
     def post(self, request):
         user_id = request.data.get("user_id")
         otp = request.data.get("otp")
+        logger = logging.getLogger(__name__)
+        try:
+            logger.debug("VerifyOtpAPI incoming request.data: %r (type=%s)", request.data, type(request.data))
+        except Exception:
+                logger.debug("VerifyOtpAPI incoming request - unable to read request.data")
 
         if not user_id or not otp:
             return Response({"detail": "User ID and OTP are required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -138,37 +154,43 @@ class VerifyOtpAPI(APIView):
         return Response(tokens, status=status.HTTP_200_OK)
 
 
-class VerifyEmailAPI(APIView):
+class VerifyEmailAPI(EnvelopeAPIView):
+    response_messages = {
+        "POST": "Email verified successfully",
+    }
+
     @extend_schema(request={"type": "object", "properties": {"token": {"type": "string"}}})
     def post(self, request):
         """Verify user email with token."""
         token = request.data.get('token')
-
+        
         if not token:
             return Response(
                 {"detail": "Token is required"},
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_400_BAD_REQUEST
             )
-
+        
         try:
             user = User.objects.get(email_verification_token=token)
             user.is_email_verified = True
             user.email_verification_token = None
             user.save(update_fields=["is_email_verified", "email_verification_token"])
-
+            
             return Response(
                 {"detail": "Email verified successfully. You can now login."},
-                status=status.HTTP_200_OK,
+                status=status.HTTP_200_OK
             )
         except User.DoesNotExist:
             return Response(
                 {"detail": "Invalid or expired verification token."},
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_400_BAD_REQUEST
             )
 
-
-class HomeAPI(APIView):
+class HomeAPI(EnvelopeAPIView):
     throttle_classes = [UserRateThrottle]
+    response_messages = {
+        "GET": "Profile fetched",
+    }
 
     @extend_schema(responses={200: UserSerializer})
     def get(self, request):
@@ -183,8 +205,11 @@ class HomeAPI(APIView):
         return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
 
 
-class RefreshTokenAPI(APIView):
+class RefreshTokenAPI(EnvelopeAPIView):
     throttle_classes = [UserRateThrottle]
+    response_messages = {
+        "POST": "Token refreshed",
+    }
 
     @extend_schema(request=RefreshTokenSerializer, responses={200: TokenResponseSerializer})
     def post(self, request):

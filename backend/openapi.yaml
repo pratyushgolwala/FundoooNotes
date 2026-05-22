@@ -1,0 +1,1175 @@
+openapi: 3.0.3
+info:
+  title: FundooNotes API
+  version: 1.0.0
+  description: API for FundooNotes - Note taking and organization application
+paths:
+  /api/auth/verify-email/:
+    post:
+      operationId: auth_verify_email_create
+      description: Verify user email with token.
+      tags:
+      - auth
+      requestBody:
+        content:
+          type:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+          properties:
+            schema:
+              token:
+                type: string
+      security:
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/home/:
+    get:
+      operationId: home_retrieve
+      tags:
+      - home
+      security:
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/invitations/:
+    get:
+      operationId: invitations_retrieve
+      description: Fetch all pending invitations for the authenticated user.
+      summary: Get pending invitations for the current user
+      tags:
+      - invitations
+      security:
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingInvitationsDocsEnvelope'
+          description: ''
+    post:
+      operationId: invitations_create
+      description: Accept or decline a pending invitation.
+      summary: Respond to an invitation (accept or decline)
+      tags:
+      - invitations
+      requestBody:
+        content:
+          type:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+          properties:
+            schema:
+              invite_id:
+                type: integer
+              action:
+                type: string
+                enum:
+                - accept
+                - decline
+          required:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+      security:
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationActionDocsEnvelope'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationActionDocsEnvelope'
+          description: ''
+  /api/labels/:
+    get:
+      operationId: labels_list
+      description: Get all labels for authenticated user
+      tags:
+      - labels
+      security:
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Label'
+          description: ''
+    post:
+      operationId: labels_create
+      description: Create a new label
+      tags:
+      - labels
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Label'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Label'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Label'
+        required: true
+      security:
+      - bearerAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Label'
+          description: ''
+  /api/login/:
+    post:
+      operationId: login_create
+      tags:
+      - login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Login'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      security:
+      - bearerAuth: []
+      - {}
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+          description: ''
+  /api/notes/:
+    get:
+      operationId: notes_retrieve
+      tags:
+      - notes
+      security:
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotesDocsEnvelope'
+          description: ''
+    post:
+      operationId: notes_create
+      tags:
+      - notes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Note'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Note'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Note'
+        required: true
+      security:
+      - bearerAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoteDocsEnvelope'
+          description: ''
+  /api/notes/{note_id}/:
+    get:
+      operationId: notes_retrieve_2
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - notes
+      security:
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoteDocsEnvelope'
+          description: ''
+    put:
+      operationId: notes_update
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - notes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Note'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Note'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Note'
+        required: true
+      security:
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoteDocsEnvelope'
+          description: ''
+    patch:
+      operationId: notes_partial_update
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - notes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedNote'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedNote'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedNote'
+      security:
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoteDocsEnvelope'
+          description: ''
+    delete:
+      operationId: notes_destroy
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - notes
+      security:
+      - bearerAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/notes/{note_id}/collaborators/:
+    get:
+      operationId: notes_collaborators_retrieve
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - notes
+      security:
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollaboratorDocsEnvelope'
+          description: ''
+    post:
+      operationId: notes_collaborators_create
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - notes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CollaboratorAdd'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CollaboratorAdd'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CollaboratorAdd'
+        required: true
+      security:
+      - bearerAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollaboratorInviteDocsEnvelope'
+          description: ''
+  /api/notes/{note_id}/collaborators/{user_id}/:
+    patch:
+      operationId: notes_collaborators_partial_update
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - notes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCollaboratorAdd'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCollaboratorAdd'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCollaboratorAdd'
+      security:
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollaboratorDetailDocsEnvelope'
+          description: ''
+    delete:
+      operationId: notes_collaborators_destroy
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - notes
+      security:
+      - bearerAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/notes/{note_id}/permanent-delete/:
+    delete:
+      operationId: notes_permanent_delete_destroy
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - notes
+      security:
+      - bearerAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/notes/{note_id}/restore/:
+    post:
+      operationId: notes_restore_create
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - notes
+      security:
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoteDocsEnvelope'
+          description: ''
+  /api/notes/invitations/{token}/{action}/:
+    get:
+      operationId: notes_invitations_retrieve
+      parameters:
+      - in: path
+        name: action
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: token
+        schema:
+          type: string
+        required: true
+      tags:
+      - notes
+      security:
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationActionDocsEnvelope'
+          description: ''
+    post:
+      operationId: notes_invitations_create
+      parameters:
+      - in: path
+        name: action
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: token
+        schema:
+          type: string
+        required: true
+      tags:
+      - notes
+      security:
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationActionDocsEnvelope'
+          description: ''
+  /api/schema/:
+    get:
+      operationId: schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - schema
+      security:
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/signup/:
+    post:
+      operationId: signup_create
+      tags:
+      - signup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Signup'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Signup'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Signup'
+        required: true
+      security:
+      - bearerAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResponse'
+          description: ''
+  /api/verify-otp/:
+    post:
+      operationId: verify_otp_create
+      tags:
+      - verify-otp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyOtpRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifyOtpRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VerifyOtpRequest'
+        required: true
+      security:
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+          description: ''
+components:
+  schemas:
+    CollaboratorAdd:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        access_level:
+          enum:
+          - view
+          - edit
+          type: string
+          description: |-
+            * `view` - view
+            * `edit` - edit
+          x-spec-enum-id: 0554c6b2e2490bc0
+          default: view
+      required:
+      - email
+    CollaboratorDetailDocsEnvelope:
+      type: object
+      properties:
+        message:
+          type: string
+        payload:
+          $ref: '#/components/schemas/CollaboratorDocs'
+        status_code:
+          type: integer
+      required:
+      - message
+      - payload
+      - status_code
+    CollaboratorDocs:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        access_level:
+          type: string
+      required:
+      - access_level
+      - email
+      - name
+    CollaboratorDocsEnvelope:
+      type: object
+      properties:
+        message:
+          type: string
+        payload:
+          type: array
+          items:
+            $ref: '#/components/schemas/CollaboratorDocs'
+        status_code:
+          type: integer
+      required:
+      - message
+      - payload
+      - status_code
+    CollaboratorInviteDocs:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        access_level:
+          type: string
+        status:
+          type: string
+        token:
+          type: string
+      required:
+      - access_level
+      - email
+      - name
+      - status
+      - token
+    CollaboratorInviteDocsEnvelope:
+      type: object
+      properties:
+        message:
+          type: string
+        payload:
+          $ref: '#/components/schemas/CollaboratorInviteDocs'
+        status_code:
+          type: integer
+      required:
+      - message
+      - payload
+      - status_code
+    InvitationActionDocs:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    InvitationActionDocsEnvelope:
+      type: object
+      properties:
+        message:
+          type: string
+        payload:
+          $ref: '#/components/schemas/InvitationActionDocs'
+        status_code:
+          type: integer
+      required:
+      - message
+      - payload
+      - status_code
+    Label:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 50
+        user:
+          type: integer
+          readOnly: true
+      required:
+      - id
+      - name
+      - user
+    Login:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - password
+      - username
+    LoginResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+        user_id:
+          type: integer
+      required:
+      - detail
+      - user_id
+    Note:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        owner:
+          type: string
+          readOnly: true
+        label_ids:
+          type: array
+          items:
+            type: integer
+        title:
+          type: string
+          maxLength: 200
+        content:
+          type: string
+        label_names:
+          type: string
+          readOnly: true
+        collaborators:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_archived:
+          type: boolean
+        is_deleted:
+          type: boolean
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+        is_pinned:
+          type: boolean
+        color:
+          type: string
+          maxLength: 7
+      required:
+      - collaborators
+      - content
+      - created_at
+      - id
+      - label_names
+      - owner
+      - title
+      - updated_at
+    NoteDocs:
+      type: object
+      properties:
+        owner:
+          $ref: '#/components/schemas/NoteDocsOwner'
+        title:
+          type: string
+        content:
+          type: string
+        label_names:
+          type: array
+          items:
+            type: string
+        collaborators:
+          type: array
+          items:
+            $ref: '#/components/schemas/NoteDocsCollaborator'
+      required:
+      - collaborators
+      - content
+      - label_names
+      - owner
+      - title
+    NoteDocsCollaborator:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        access_level:
+          type: string
+      required:
+      - access_level
+      - email
+      - name
+    NoteDocsEnvelope:
+      type: object
+      properties:
+        message:
+          type: string
+        payload:
+          $ref: '#/components/schemas/NoteDocs'
+        status_code:
+          type: integer
+      required:
+      - message
+      - payload
+      - status_code
+    NoteDocsOwner:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+      required:
+      - email
+      - name
+    NotesDocsEnvelope:
+      type: object
+      properties:
+        message:
+          type: string
+        payload:
+          type: array
+          items:
+            $ref: '#/components/schemas/NoteDocs'
+        status_code:
+          type: integer
+      required:
+      - message
+      - payload
+      - status_code
+    PatchedCollaboratorAdd:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        access_level:
+          enum:
+          - view
+          - edit
+          type: string
+          description: |-
+            * `view` - view
+            * `edit` - edit
+          x-spec-enum-id: 0554c6b2e2490bc0
+          default: view
+    PatchedNote:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        owner:
+          type: string
+          readOnly: true
+        label_ids:
+          type: array
+          items:
+            type: integer
+        title:
+          type: string
+          maxLength: 200
+        content:
+          type: string
+        label_names:
+          type: string
+          readOnly: true
+        collaborators:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_archived:
+          type: boolean
+        is_deleted:
+          type: boolean
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+        is_pinned:
+          type: boolean
+        color:
+          type: string
+          maxLength: 7
+    PendingInvitationDocs:
+      type: object
+      properties:
+        note_title:
+          type: string
+        invited_by_name:
+          type: string
+        invited_by_email:
+          type: string
+          format: email
+        access_level:
+          type: string
+      required:
+      - access_level
+      - invited_by_email
+      - invited_by_name
+      - note_title
+    PendingInvitationsDocsEnvelope:
+      type: object
+      properties:
+        message:
+          type: string
+        payload:
+          type: array
+          items:
+            $ref: '#/components/schemas/PendingInvitationDocs'
+        status_code:
+          type: integer
+      required:
+      - message
+      - payload
+      - status_code
+    Signup:
+      type: object
+      properties:
+        username:
+          type: string
+          maxLength: 100
+        email:
+          type: string
+          format: email
+        phone_number:
+          type: string
+          maxLength: 15
+        password:
+          type: string
+          writeOnly: true
+          minLength: 6
+      required:
+      - email
+      - password
+      - phone_number
+      - username
+    SignupResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+        user_id:
+          type: integer
+      required:
+      - detail
+      - user_id
+    TokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        token_type:
+          type: string
+        expires_in:
+          type: integer
+        user_id:
+          type: integer
+      required:
+      - access_token
+      - expires_in
+      - refresh_token
+      - token_type
+      - user_id
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone_number:
+          type: string
+      required:
+      - email
+      - id
+      - name
+      - phone_number
+    VerifyOtpRequest:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        otp:
+          type: string
+          maxLength: 6
+      required:
+      - otp
+      - user_id
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Enter your JWT token
